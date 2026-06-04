@@ -9,7 +9,7 @@ use std::io::{BufRead, BufReader, Read, Write};
 pub struct TextParser;
 
 impl TransactionParser for TextParser {
-    fn parse<R: Read>(&self, reader: &mut R) -> Result<TransactionRecord> {
+    fn parse(&self, reader: &mut dyn Read) -> Result<TransactionRecord> {
         let buf_reader = BufReader::new(reader);
         let mut transactions = TransactionRecord::new();
         
@@ -51,9 +51,9 @@ impl TransactionParser for TextParser {
 }
 
 impl TransactionSerializer for TextParser {
-    fn serialize<W: Write>(
+    fn serialize(
         &self,
-        writer: &mut W,
+        writer: &mut dyn Write,
         transactions: &TransactionRecord,
     ) -> Result<()> {
         for transaction in &transactions.transactions {

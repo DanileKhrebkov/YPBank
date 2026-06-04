@@ -13,7 +13,7 @@ const VERSION: u16 = 1;
 pub struct BinaryParser;
 
 impl TransactionParser for BinaryParser {
-    fn parse<R: Read>(&self, reader: &mut R) -> Result<TransactionRecord> {
+    fn parse(&self, reader: &mut dyn Read) -> Result<TransactionRecord> {
         let mut transactions = TransactionRecord::new();
         
         // Читаем заголовок
@@ -50,9 +50,10 @@ impl TransactionParser for BinaryParser {
                 std::ptr::read(record_buf.as_ptr() as *const BinaryRecord)
             };
             
-            let timestamp = chrono::NaiveDateTime::from_timestamp_opt(binary_record.timestamp, 0)
-                .ok_or_else(|| ParserError::BinaryParse("Invalid timestamp".to_string()))?;
-            
+            // Исправляем deprecated warning
+            let timestamp = chrono::DateTime::from_timestamp(binary_record.timestamp, 0)
+    .ok_or_else(|| ParserError::BinaryParse("Invalid timestamp".to_string()))?
+    .naive_local();
             let transaction_type = match binary_record.transaction_type {
                 0 => TransactionType::Income,
                 1 => TransactionType::Expense,
@@ -75,9 +76,9 @@ impl TransactionParser for BinaryParser {
 }
 
 impl TransactionSerializer for BinaryParser {
-    fn serialize<W: Write>(
+    fn serialize(
         &self,
-        writer: &mut W,
+        writer: &mut dyn Write,
         transactions: &TransactionRecord,
     ) -> Result<()> {
         // Записываем заголовок

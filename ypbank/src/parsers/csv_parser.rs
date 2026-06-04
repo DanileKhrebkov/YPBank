@@ -1,3 +1,5 @@
+//! CSV формат парсера для банковских операций
+
 use crate::error::{ParserError, Result};
 use crate::models::{Transaction, TransactionRecord, TransactionType};
 use crate::parsers::{TransactionParser, TransactionSerializer};
@@ -8,7 +10,7 @@ use std::io::{Read, Write};
 pub struct CsvParser;
 
 impl TransactionParser for CsvParser {
-    fn parse<R: Read>(&self, reader: &mut R) -> Result<TransactionRecord> {
+    fn parse(&self, reader: &mut dyn Read) -> Result<TransactionRecord> {
         let mut csv_reader = ReaderBuilder::new()
             .has_headers(true)
             .from_reader(reader);
@@ -49,17 +51,19 @@ impl TransactionParser for CsvParser {
 }
 
 impl TransactionSerializer for CsvParser {
-    fn serialize<W: Write>(
+    fn serialize(
         &self,
-        writer: &mut W,
+        writer: &mut dyn Write,
         transactions: &TransactionRecord,
     ) -> Result<()> {
         let mut csv_writer = WriterBuilder::new()
             .has_headers(true)
             .from_writer(writer);
         
+        // Записываем заголовки
         csv_writer.write_record(&["id", "date", "amount", "type", "description", "counterparty"])?;
         
+        // Записываем транзакции
         for transaction in &transactions.transactions {
             csv_writer.write_record(&[
                 transaction.id.to_string(),
@@ -94,7 +98,8 @@ mod tests {
         assert_eq!(result.len(), 2);
         assert_eq!(result.transactions[0].id, 1);
         assert_eq!(result.transactions[0].amount, 100.50);
-    
+        
+        // Тест сериализации
         let mut output = Vec::new();
         parser.serialize(&mut output, &result).unwrap();
         let output_str = String::from_utf8(output).unwrap();

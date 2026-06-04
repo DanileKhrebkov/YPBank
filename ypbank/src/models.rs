@@ -1,6 +1,6 @@
 //! Модели данных для финансовых транзакций
 
-use chrono::{DateTime, NaiveDate, ParseError};
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
