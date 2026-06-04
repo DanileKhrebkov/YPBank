@@ -1,0 +1,4 @@
+id,date,amount,type,description,counterparty
+1,2024-01-15,100.50,Income,Salary,TEST Corp
+2,2024-01-16,50.25,Expense, Lunch,Restaurant
+3,2024-01-17,200.00,Transfer,Payment,Ivan Ivanov

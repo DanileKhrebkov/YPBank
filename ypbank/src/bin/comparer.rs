@@ -1,5 +1,3 @@
-//! Консольная утилита для сравнения финансовых данных из двух файлов
-
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
@@ -21,28 +19,22 @@ enum Format {
 #[command(name = "ypbank_compare")]
 #[command(about = "Сравнивает финансовые данные из двух файлов", long_about = None)]
 struct Cli {
-    /// Первый файл для сравнения
-    #[arg(short, long)]
+    #[arg(short = '1', long, value_name = "FILE1")]
     file1: PathBuf,
     
-    /// Формат первого файла
-    #[arg(short, long, value_enum)]
+    #[arg(short = 'a', long, value_enum)]
     format1: Format,
     
-    /// Второй файл для сравнения
-    #[arg(short, long)]
+    #[arg(short = '2', long, value_name = "FILE2")]
     file2: PathBuf,
-    
-    /// Формат второго файла
-    #[arg(short, long, value_enum)]
+
+    #[arg(short = 'b', long, value_enum)]
     format2: Format,
     
-    /// Игнорировать порядок транзакций при сравнении
     #[arg(long)]
     ignore_order: bool,
 }
 
-// Используем enum вместо Box<dyn Trait>
 enum ParserEnum {
     Csv(CsvParser),
     Text(TextParser),
@@ -105,19 +97,16 @@ fn main() {
 }
 
 fn run_comparer(cli: &Cli) -> Result<(), ParserError> {
-    // Чтение первого файла
     let file1 = File::open(&cli.file1)?;
     let mut reader1 = BufReader::new(file1);
     let parser1 = get_parser(cli.format1.clone());
     let transactions1 = parser1.parse(&mut reader1)?;
     
-    // Чтение второго файла
     let file2 = File::open(&cli.file2)?;
     let mut reader2 = BufReader::new(file2);
     let parser2 = get_parser(cli.format2.clone());
     let transactions2 = parser2.parse(&mut reader2)?;
     
-    // Сравнение
     if transactions1.len() != transactions2.len() {
         println!(
             "Файлы различаются: количество транзакций {} vs {}",
@@ -132,7 +121,6 @@ fn run_comparer(cli: &Cli) -> Result<(), ParserError> {
     let mut differences_found = false;
     
     if cli.ignore_order {
-        // Сортируем транзакции для сравнения без учета порядка
         let mut sorted1 = transactions1.transactions.clone();
         let mut sorted2 = transactions2.transactions.clone();
         sorted1.sort_by_key(|t| t.id);
@@ -149,7 +137,6 @@ fn run_comparer(cli: &Cli) -> Result<(), ParserError> {
             }
         }
     } else {
-        // Сравниваем в том же порядке
         for (i, (t1, t2)) in transactions1.transactions.iter()
             .zip(transactions2.transactions.iter())
             .enumerate() {

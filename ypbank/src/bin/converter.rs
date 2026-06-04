@@ -1,5 +1,3 @@
-//! Консольная утилита для конвертации финансовых данных между форматами
-
 use std::fs::File;
 use std::io::{self, stdin, BufReader, Read, Write};
 use std::path::PathBuf;
@@ -21,20 +19,16 @@ enum Format {
 #[command(name = "ypbank_converter")]
 #[command(about = "Конвертирует финансовые данные между различными форматами", long_about = None)]
 struct Cli {
-    /// Входной файл (если не указан, читает из stdin)
-    #[arg(short, long)]
+    #[arg(short = 'f', long, value_name = "FILE")]
     input: Option<PathBuf>,
-    
-    /// Формат входного файла
-    #[arg(short, long, value_enum)]
+
+    #[arg(short = 'i', long, value_enum)]
     input_format: Format,
-    
-    /// Формат выходного файла
-    #[arg(short, long, value_enum)]
+
+    #[arg(short = 'o', long, value_enum)]
     output_format: Format,
 }
 
-// Используем enum вместо Box<dyn Trait>
 enum ParserEnum {
     Csv(CsvParser),
     Text(TextParser),
@@ -97,7 +91,6 @@ fn main() {
 }
 
 fn run_converter(cli: &Cli) -> Result<(), ParserError> {
-    // Чтение данных
     let mut reader: Box<dyn Read> = if let Some(input_path) = &cli.input {
         let file = File::open(input_path)?;
         Box::new(BufReader::new(file))
@@ -111,8 +104,7 @@ fn run_converter(cli: &Cli) -> Result<(), ParserError> {
     if transactions.is_empty() {
         eprintln!("Предупреждение: не найдено ни одной транзакции");
     }
-    
-    // Запись данных
+
     let serializer = get_serializer(cli.output_format.clone());
     let mut stdout = io::stdout();
     serializer.serialize(&mut stdout, &transactions)?;
