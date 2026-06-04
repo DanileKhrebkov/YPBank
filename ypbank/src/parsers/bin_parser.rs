@@ -1,12 +1,10 @@
-//! Бинарный формат парсера для банковских операций
-
 use crate::error::{ParserError, Result};
 use crate::models::{BinaryRecord, Transaction, TransactionRecord, TransactionType};
 use crate::parsers::{TransactionParser, TransactionSerializer};
 use std::io::{Read, Write};
 use std::mem;
 
-const MAGIC_NUMBER: u32 = 0x5950424B; // "YPBK" в ASCII
+const MAGIC_NUMBER: u32 = 0x5950424B; 
 const VERSION: u16 = 1;
 
 #[derive(Debug, Clone, Default)]
@@ -15,8 +13,7 @@ pub struct BinaryParser;
 impl TransactionParser for BinaryParser {
     fn parse(&self, reader: &mut dyn Read) -> Result<TransactionRecord> {
         let mut transactions = TransactionRecord::new();
-        
-        // Читаем заголовок
+
         let mut magic = [0u8; 4];
         reader.read_exact(&mut magic)?;
         let magic_num = u32::from_le_bytes(magic);
@@ -40,8 +37,7 @@ impl TransactionParser for BinaryParser {
         let mut count = [0u8; 4];
         reader.read_exact(&mut count)?;
         let record_count = u32::from_le_bytes(count);
-        
-        // Читаем записи
+
         for _ in 0..record_count {
             let mut record_buf = [0u8; mem::size_of::<BinaryRecord>()];
             reader.read_exact(&mut record_buf)?;
@@ -49,8 +45,7 @@ impl TransactionParser for BinaryParser {
             let binary_record: BinaryRecord = unsafe {
                 std::ptr::read(record_buf.as_ptr() as *const BinaryRecord)
             };
-            
-            // Исправляем deprecated warning
+
             let timestamp = chrono::DateTime::from_timestamp(binary_record.timestamp, 0)
     .ok_or_else(|| ParserError::BinaryParse("Invalid timestamp".to_string()))?
     .naive_local();
@@ -81,12 +76,10 @@ impl TransactionSerializer for BinaryParser {
         writer: &mut dyn Write,
         transactions: &TransactionRecord,
     ) -> Result<()> {
-        // Записываем заголовок
         writer.write_all(&MAGIC_NUMBER.to_le_bytes())?;
         writer.write_all(&VERSION.to_le_bytes())?;
         writer.write_all(&(transactions.len() as u32).to_le_bytes())?;
-        
-        // Записываем транзакции
+
         for transaction in &transactions.transactions {
             let transaction_type = match transaction.transaction_type {
                 TransactionType::Income => 0u8,

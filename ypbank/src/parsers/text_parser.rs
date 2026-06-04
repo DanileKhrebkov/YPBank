@@ -1,5 +1,3 @@
-//! Текстовый формат парсера для банковских операций
-
 use crate::error::{ParserError, Result};
 use crate::models::{Transaction, TransactionRecord, TransactionType};
 use crate::parsers::{TransactionParser, TransactionSerializer};

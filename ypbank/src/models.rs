@@ -1,11 +1,8 @@
-//! Модели данных для финансовых транзакций
-
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::str::FromStr;
 
-/// Тип транзакции
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TransactionType {
     Income,   
@@ -67,7 +64,6 @@ impl Transaction {
     }
 }
 
-/// Запись в бинарном формате
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct BinaryRecord {
