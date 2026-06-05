@@ -1,3 +1,5 @@
+//! Модуль парсеров для различных форматов данных
+
 use crate::error::Result;
 use crate::models::TransactionRecord;
 use std::io::{Read, Write};
@@ -10,11 +12,32 @@ pub use csv_parser::CsvParser;
 pub use text_parser::TextParser;
 pub use bin_parser::BinaryParser;
 
+/// Трейт для парсинга транзакций из потока чтения
+/// 
+/// Реализуется для парсеров различных форматов (CSV, текст, бинарный)
 pub trait TransactionParser: Send + Sync {
+    /// Парсит транзакции из источника данных
+    /// 
+    /// # Аргументы
+    /// * `reader` - любой тип, реализующий трейт Read (файл, stdin, буфер)
+    /// 
+    /// # Возвращает
+    /// * `Result<TransactionRecord>` - коллекция транзакций или ошибка парсинга
     fn parse(&self, reader: &mut dyn Read) -> Result<TransactionRecord>;
 }
 
+/// Трейт для сериализации транзакций в поток записи
+/// 
+/// Реализуется для сериализаторов различных форматов
 pub trait TransactionSerializer: Send + Sync {
+    /// Сериализует транзакции в приемник данных
+    /// 
+    /// # Аргументы
+    /// * `writer` - любой тип, реализующий трейт Write (файл, stdout, буфер)
+    /// * `transactions` - коллекция транзакций для записи
+    /// 
+    /// # Возвращает
+    /// * `Result<()>` - успех или ошибка сериализации
     fn serialize(
         &self,
         writer: &mut dyn Write,
